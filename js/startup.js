@@ -3,6 +3,7 @@
 
 $(function() {
     var bpn = new BipartiteNetwork($('#networks'), {});
+    bpn.resizeTo(window);
     var nodes = [
 	{ name : 'sam',
 	  position : 'top' },
@@ -28,14 +29,14 @@ $(function() {
     for (var i = 0; i < 30; i++) {
 	nodes.push({
 	    name : i,
-	    position : i % 2 ? "top" : "bottom",
-	    proposal : (~~(Math.random() * 100)) / 100
+	    position : i % 3 ? "top" : "bottom",
+	    proposal : (~~(1+Math.random() * 100)) / 100
 	});
     }
     edges = [];
     for (var i = 0; i < 100; i++) {
-	var start = ~~(Math.random() * 15) * 2;
-	var end = ~~(Math.random() * 15) * 2 + 1;
+	var start = ~~(Math.random() * 10) * 3;
+	var end = ~~(Math.random() * 10) * 3 + 1+ ~~(Math.random()*2);
 	edges.push({
 	    from : start,
 	    to : end

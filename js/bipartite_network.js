@@ -18,10 +18,27 @@ var BipartiteNetwork = (function BipartiteNetworkClosure() {
     }
 
     var PADDING = 0.05, // Padding on either side of node, as % of diameter.
-	TOP_BOTTOM_MARGINS = 0.1, // Padding on top / bottom of nodes.
+	TOP_BOTTOM_MARGINS = 0.03, // Padding on top / bottom of nodes.
 	MAX_NODE_RADIUS = 0.05;
 
+    var HIGHLIGHTED_COLOR = "#fc6",
+	LINE_WEIGHT = 3;
+
     BipartiteNetwork.prototype = {
+	resizeTo : function(el) {
+	    var self = this;
+	    function resizeHandler() {
+		console.log("res");
+		self.width = $(el).width();
+		self.height = $(el).height();
+		self.$el.attr('width', self.width);
+		self.$el.attr('height', self.height);
+		self.calculateNodePositions().draw();
+	    }
+	    $(el).on("resize", resizeHandler);
+	    window.setTimeout(resizeHandler, 0);
+	    return this;
+	},
 	setEdges : function(edges) {
 	    this.edges = edges;
 	    return this;
@@ -102,20 +119,31 @@ var BipartiteNetwork = (function BipartiteNetworkClosure() {
 		    bottom_x_pos += (node_width + bottom_padding) / 2.0;
 		}
 	    }
+	    return this;
 	},
 	drawNodes : function(highlightedNames) {
+	    function nodeBackground(node) {
+		if (node.dead) {
+		    return '#aaa';
+		} else if (node.proposal) {
+		    return '#cfc';
+		} else {
+		    return '#fff';
+		}
+	    }
+
 	    this.ctx.save();
 	    this.ctx.textAlign = 'center';
 	    this.ctx.textBaseline = 'middle';
 	    this.ctx.font = '12px sans-serif';
-	    this.ctx.lineWidth = 4;
+	    this.ctx.lineWidth = LINE_WEIGHT;
 	    for (var i = 0; i < this.nodes.length; ++i) {
 		if (highlightedNames.hasOwnProperty(this.nodes[i].name)) {
-		    this.ctx.strokeStyle = '#eb7';
+		    this.ctx.strokeStyle = HIGHLIGHTED_COLOR;
 		} else {
 		    this.ctx.strokeStyle = '#000';
 		}
-		this.ctx.fillStyle = this.nodes[i].dead ? '#aaa' : '#fff';
+		this.ctx.fillStyle = nodeBackground(this.nodes[i]);
 		this.ctx.beginPath();
 		try {
 		    this.ctx.arc(this.nodes[i].x, this.nodes[i].y, this.nodes[i].radius, 0, 2 * Math.PI);
@@ -129,8 +157,13 @@ var BipartiteNetwork = (function BipartiteNetworkClosure() {
 		this.ctx.fillStyle = '#000';
 		var display_text = this.nodes[i].name;
 		if (this.nodes[i].proposal && !this.nodes[i].dead) {
-		    display_text += ' (' + this.nodes[i].proposal + ')';
+		    display_text += ' (' + this.nodes[i].proposal.toFixed(2) + ')';
 		}
+		this.ctx.save();
+		this.ctx.strokeStyle = nodeBackground(this.nodes[i]);
+		this.ctx.lineWidth = LINE_WEIGHT;
+		this.ctx.strokeText(display_text, this.nodes[i].x, this.nodes[i].y);
+		this.ctx.restore();
 		this.ctx.fillText(display_text, this.nodes[i].x, this.nodes[i].y );
 	    }
 	    this.ctx.restore();
@@ -139,7 +172,7 @@ var BipartiteNetwork = (function BipartiteNetworkClosure() {
 	drawEdges : function(highlightedNames) {
 	    var edgesToHighlight = [];
 	    this.ctx.save();
-	    this.ctx.lineWidth = 4;
+	    this.ctx.lineWidth = LINE_WEIGHT;
 	    for (var i = 0; i < this.edges.length; ++i) {
 		var from_node = this.nodeMap[this.edges[i].from],
 		    to_node = this.nodeMap[this.edges[i].to];
@@ -163,7 +196,7 @@ var BipartiteNetwork = (function BipartiteNetworkClosure() {
 		this.ctx.closePath();
 		this.ctx.stroke();
 	    }
-	    this.ctx.strokeStyle = '#eb7';
+	    this.ctx.strokeStyle = HIGHLIGHTED_COLOR;
 	    for (var i = 0; i < edgesToHighlight.length; ++i ) {
 		var from_node = edgesToHighlight[i][0],
 		    to_node = edgesToHighlight[i][1];
@@ -189,7 +222,7 @@ var BipartiteNetwork = (function BipartiteNetworkClosure() {
 	    return this.clear().drawEdges(highlightedNames).drawNodes(highlightedNames);
 	},
 	getNodeByLocation : function(x,y) {
-	    var TOLERANCE = 5; // Five pixels.
+	    var TOLERANCE = LINE_WEIGHT; // n pixels.
 	    for (var i = 0; i < this.nodes.length; ++i) {
 		if (Math.sqrt(Math.pow(this.nodes[i].x - x, 2) + 
 			      Math.pow(this.nodes[i].y - y, 2)) < (this.nodes[i].radius + TOLERANCE)) {
