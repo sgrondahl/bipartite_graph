@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bipartite_network.js"></script>
+    <script type="text/javascript" src="js/startup.js"></script>
+    <style>
+      #accept_proposal {
+      display: block;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200px;
+      height: 200px;
+      margin-left: -100px;
+      margin-top: -100px;
+      background-color: #cec;
+      padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="networks" width="800" height="600"></canvas>
+    <div id="accept_proposal" style="display:none;">
+      <p> Would you like to accept the proposal from player <span data-field="player"></span> in the amount of <span data-field="amount"></span>?</p>
+      <form script="accept_proposal">
+	<input type="hidden" name="proposer"/>
+	<button type="submit">Yes</button>
+      </form>
+    </div>
+  </body>
+</html>
